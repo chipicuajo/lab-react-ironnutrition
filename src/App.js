@@ -4,14 +4,29 @@ import 'bulma/css/bulma.css';
 import foods from './foods.json';
 import FoodBox from './components/FoodBox';
 import AddForm from './components/AddForm';
+import Search from './components/Search';
+import Total from './components/Total';
 
 class App extends Component {
 
   state ={
     foods: foods,
     filteredFoods:foods,
-    showForm:false
+    showForm:false,
+    totalFoods:[]
   }
+
+  handleSearch =(e) => {
+    let input = e.target.value
+    const {foods} = this.state
+    let filteredFoods = foods.filter((e)=>{
+      return e.name.toLowerCase().includes(input.toLowerCase())
+    })
+
+    this.setState({
+      filteredFoods: filteredFoods
+    })
+}
 
   handleAddFood = (newFood) => {
     this.setState({
@@ -37,20 +52,33 @@ class App extends Component {
   handleShowForm =() => {
     this.setState({showForm:true})
   }
+  handleTotal=(food, quantity)=>{
+    let myFood = {...food, quantity}
+    this.setState({
+      totalFoods:[myFood, ...this.state.totalFoods]
+    })
+  }
 
   render(){
-    const {showForm, foods} = this.state
+    const {showForm, filteredFoods, totalFoods} = this.state
+    
     return (
-      <div>
-          <h2>Foods</h2>
-          {
-            showForm ? <AddForm onSubmit={this.handleSubmit}/> : <button onClick={this.handleShowForm} className="button is-danger">Show Form</button>
-          },
-          {
-          foods.map((e, i) => {
-            return <FoodBox onAdd={this.handleAddFood} key={i} name={e.name} calories={e.calories} image={e.image}/>
-          })
-          }
+      <div className="columns">
+          <div className="column">
+            <h2>Foods</h2>
+              <Search onSearch={this.handleSearch}/>
+              {
+                showForm ? <AddForm onSubmit={this.handleSubmit}/> : <button onClick={this.handleShowForm} className="button is-danger">Show Form</button>
+              }
+              {
+                filteredFoods.map((e, i) => {
+                  return <FoodBox onTotal={this.handleTotal} onAdd={this.handleAddFood} key={i} name={e.name} calories={e.calories} image={e.image} quantity={e.quantity} />
+                })
+              }
+          </div>
+          <div className="comumn">
+            <Total totalFoods={totalFoods}/>
+          </div>
       </div>
     );
   }
